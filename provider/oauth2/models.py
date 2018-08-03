@@ -49,7 +49,7 @@ class Client(models.Model):
     client_secret = models.CharField(max_length=255, default=long_token)
     client_type = models.IntegerField(choices=CLIENT_TYPES)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.redirect_uri
 
     def get_default_token_expiry(self):
@@ -112,7 +112,7 @@ class Grant(models.Model):
     class Meta:
         db_table = 'oauth2_grant'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
 
@@ -148,7 +148,7 @@ class AccessToken(models.Model):
     class Meta:
         db_table = 'oauth2_accesstoken'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.token
 
     def save(self, *args, **kwargs):
@@ -198,5 +198,5 @@ class RefreshToken(models.Model):
     class Meta:
         db_table = 'oauth2_refreshtoken'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.token
