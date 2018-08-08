@@ -29,7 +29,9 @@ class BasicClientBackend(object):
 
         try:
             basic, base64 = auth.split(' ')
-            client_id, client_secret = base64.decode('base64').split(':')
+            if type(base64) is not str:
+                base64 = base64.decode('base64')
+            client_id, client_secret = base64.split(':')
 
             form = ClientAuthForm({
                 'client_id': client_id,
