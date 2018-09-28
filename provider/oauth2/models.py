@@ -79,7 +79,7 @@ class Client(models.Model):
 
             # handle relations
             if val and field.remote_field:
-                val = deserialize_instance(field.remote_field.to, val)
+                val = deserialize_instance(field.remote_field.model, val)
 
             kwargs[name] = val
 
