@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect, QueryDict
@@ -347,7 +347,7 @@ class Redirect(OAuthView, Mixin):
 
         parsed = parsed[:4] + (query.urlencode(), '')
 
-        redirect_uri = urlparse.ParseResult(*parsed).geturl()
+        redirect_uri = ParseResult(*parsed).geturl()
 
         self.clear_data(request)
 
