@@ -57,7 +57,7 @@ class Client(models.Model):
         return get_token_expiry(public)
 
     def serialize(self):
-        return dict(user=serialize_instance(self.user),
+        return dict(user=serialize_instance(self.user) if self.user else "",
                     name=self.name,
                     url=self.url,
                     redirect_uri=self.redirect_uri,
@@ -78,8 +78,8 @@ class Client(models.Model):
             val = data.get(field.name, None)
 
             # handle relations
-            if val and field.rel:
-                val = deserialize_instance(field.rel.to, val)
+            if val and field.remote_field:
+                val = deserialize_instance(field.remote_field.to, val)
 
             kwargs[name] = val
 

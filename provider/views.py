@@ -1,5 +1,6 @@
 import json
 from urllib.parse import urlparse
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect, QueryDict
 from django.utils.translation import ugettext as _
@@ -55,6 +56,8 @@ class Mixin(object):
 
         :param key: `str` The key under which the data was stored.
         """
+        if hasattr(request, 'auth'):
+            return cache.get('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, key))
         return request.session.get('%s:%s' % (constants.SESSION_KEY, key))
 
     def cache_data(self, request, data, key='params'):
@@ -65,13 +68,21 @@ class Mixin(object):
         :param data: Arbitrary data to store.
         :param key: `str` The key under which to store the data.
         """
+        if hasattr(request, 'auth'):
+            key = cache.set('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, key), data, 300)
+            request.session[key] = data
         request.session['%s:%s' % (constants.SESSION_KEY, key)] = data
 
     def clear_data(self, request):
         """
         Clear all OAuth related data from the session store.
         """
-        for key in request.session.keys():
+        if hasattr(request, 'auth'):
+            cache.delete('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, 'params'))
+            cache.delete('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, 'code'))
+            cache.delete('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, 'client'))
+            return
+        for key, value in list(request.session.items()):
             if key.startswith(constants.SESSION_KEY):
                 del request.session[key]
 
@@ -320,7 +331,7 @@ class Redirect(OAuthView, Mixin):
 
         redirect_uri = data.get('redirect_uri', None) or client.redirect_uri
 
-        parsed = urlparse.urlparse(redirect_uri)
+        parsed = urlparse(redirect_uri)
 
         query = QueryDict('', mutable=True)
 
