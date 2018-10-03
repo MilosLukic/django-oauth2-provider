@@ -69,8 +69,8 @@ class Mixin(object):
         :param key: `str` The key under which to store the data.
         """
         if hasattr(request, 'auth'):
-            key = cache.set('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, key), data, 300)
-            request.session[key] = data
+            cache.set('%s:%s:%s' % (request.auth.token, constants.SESSION_KEY, key), data, 300)
+            return
         request.session['%s:%s' % (constants.SESSION_KEY, key)] = data
 
     def clear_data(self, request):
