@@ -582,6 +582,8 @@ class AccessToken(OAuthView, Mixin):
         """
         As per :rfc:`3.2` the token endpoint *only* supports POST requests.
         """
+        get_post_data(request)
+
         if constants.ENFORCE_SECURE and not request.is_secure():
             return self.error_response({
                 'error': 'invalid_request',
@@ -609,3 +611,12 @@ class AccessToken(OAuthView, Mixin):
             return handler(request, request.POST, client)
         except OAuthError as e:
             return self.error_response(e.args[0])
+
+def get_post_data(request):
+    if request.POST:
+        return request.POST
+    else:
+        try:
+            request.POST = json.loads(request.body.decode('utf-8'))
+        except:
+            return request.POST
