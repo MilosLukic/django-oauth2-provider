@@ -183,9 +183,11 @@ class LogoutView(OAuthView, Mixin):
                 'error': 'invalid_request',
                 'error_description': _("A secure connection is required.")})
 
-        if hasattr(request, 'auth'):
+        if hasattr(request, 'auth') and request.auth:
             request.auth.expires = timezone.now()
             request.auth.save()
+            request.auth.refresh_token.expires = timezone.now()
+            request.auth.refresh_token.save()
         else:
             logout(request.user)
         return self.success_response({'status': 'SUCCESS', 'message': 'Successfully logged out.'})
