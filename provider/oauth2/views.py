@@ -1,10 +1,14 @@
+import json
+
 from datetime import timedelta
 from django.urls import reverse
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect, QueryDict, HttpResponseForbidden, HttpResponse
+from django.utils import timezone
+from django.contrib.auth import logout
 
 from .. import constants
-from ..views import Capture, Authorize, Redirect
-from ..views import AccessToken as AccessTokenView, OAuthError
+from ..views import Capture, Authorize, Redirect, get_post_data
+from ..views import AccessToken as AccessTokenView, OAuthError, OAuthView, Mixin
 from ..utils import now
 from .forms import AuthorizationRequestForm, AuthorizationForm
 from .forms import PasswordGrantForm, RefreshTokenGrantForm
@@ -151,3 +155,41 @@ class AccessTokenView(AccessTokenView):
         else:
             at.expires = now() - timedelta(days=1)
             at.save()
+
+
+class LogoutView(OAuthView, Mixin):
+    authentication = (
+        BasicClientBackend,
+        RequestParamsClientBackend,
+        PublicPasswordBackend,
+    )
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(json.dumps({'error': 'Method not allowed.'}), content_type='application/json',
+                status=405, **kwargs)
+
+    def post(self, request):
+        """
+        As per :rfc:`3.2` the token endpoint *only* supports POST requests.
+        """
+        get_post_data(request)
+
+        if constants.ENFORCE_SECURE and not request.is_secure():
+            return self.error_response({
+                'error': 'invalid_request',
+                'error_description': _("A secure connection is required.")})
+
+        if hasattr(request, 'auth'):
+            request.auth.expires = timezone.now()
+            request.auth.save()
+        else:
+            logout(request.user)
+        return self.success_response({'status': 'SUCCESS', 'message': 'Successfully logged out.'})
+
+    def success_response(self, success_message, content_type='application/json', status=200,
+            **kwargs):
+        """
+        Return an error response to the client with default status code of
+        *400* stating the error as outlined in :rfc:`5.2`.
+        """
+        return HttpResponse(json.dumps(success_message), content_type=content_type,
+                status=status, **kwargs)

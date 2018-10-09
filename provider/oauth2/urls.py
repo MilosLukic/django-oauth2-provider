@@ -36,7 +36,7 @@ that are meant for client (as defined in :rfc:`1`) interaction.
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from ..compat.urls import *
-from .views import Authorize, Redirect, Capture, AccessTokenView
+from .views import Authorize, Redirect, Capture, AccessTokenView, LogoutView
 
 
 urlpatterns = [
@@ -52,4 +52,7 @@ urlpatterns = [
     url('^access_token/?$',
         csrf_exempt(AccessTokenView.as_view()),
         name='access_token'),
+    url('^logout/?$',
+        login_required(LogoutView.as_view()),
+        name='logout_view'),
 ]
