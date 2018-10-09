@@ -69,6 +69,10 @@ class Client(models.Model):
     def sandbox_client(self):
         return self.user and self.user.username == 'oauth2-sandbox-user'
 
+    @property
+    def is_public(self):
+        return self.user == None
+
     @classmethod
     def deserialize(cls, data):
         if not data:

@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from datetime import timedelta
@@ -122,10 +123,14 @@ class AccessTokenView(AccessTokenView):
         return at
 
     def create_access_token(self, request, user, scope, client):
+        parameters = {}
+        if client.is_public:
+            parameters = {'expires': timezone.now() + datetime.timedelta(days=7)}
         return AccessToken.objects.create(
             user=user,
             client=client,
-            scope=scope
+            scope=scope,
+            **parameters
         )
 
     def create_refresh_token(self, request, user, scope, access_token, client):
