@@ -1,5 +1,7 @@
 from datetime import timedelta
 from django.urls import reverse
+from django.http import HttpResponseRedirect, QueryDict
+
 from .. import constants
 from ..views import Capture, Authorize, Redirect
 from ..views import AccessToken as AccessTokenView, OAuthError
@@ -18,6 +20,18 @@ class Capture(Capture):
     def get_redirect_url(self, request):
         return reverse('oauth2:authorize')
 
+    def handle(self, request, data):
+        self.cache_data(request, data)
+
+        if constants.ENFORCE_SECURE and not request.is_secure():
+            return self.render_to_response({'error': 'access_denied',
+                'error_description': _("A secure connection is required."),
+                'next': None},
+                status=400)
+        if hasattr(request, 'auth'):
+            request.method = 'GET'
+            return Authorize.as_view()(request)
+        return HttpResponseRedirect(self.get_redirect_url(request))
 
 class Authorize(Authorize):
     """

@@ -125,6 +125,7 @@ class Capture(OAuthView, Mixin):
         raise NotImplementedError
 
     def handle(self, request, data):
+        """ This function is overwritten in oauth2 views"""
         self.cache_data(request, data)
 
         if constants.ENFORCE_SECURE and not request.is_secure():
@@ -132,7 +133,6 @@ class Capture(OAuthView, Mixin):
                 'error_description': _("A secure connection is required."),
                 'next': None},
                 status=400)
-
         return HttpResponseRedirect(self.get_redirect_url(request))
 
     def get(self, request):
@@ -286,6 +286,11 @@ class Authorize(OAuthView, Mixin):
         self.cache_data(request, data)
         self.cache_data(request, code, "code")
         self.cache_data(request, client.serialize(), "client")
+
+        if hasattr(request, 'auth'):
+            request.method = 'GET'
+            request.path = self.get_redirect_url(request)
+            return Redirect.as_view()(request)
 
         return HttpResponseRedirect(self.get_redirect_url(request))
 
