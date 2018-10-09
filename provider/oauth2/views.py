@@ -186,7 +186,7 @@ class LogoutView(OAuthView, Mixin):
         if hasattr(request, 'auth') and request.auth:
             request.auth.expires = timezone.now()
             request.auth.save()
-            request.auth.refresh_token.expires = timezone.now()
+            request.auth.refresh_token.expired = True
             request.auth.refresh_token.save()
         else:
             logout(request.user)
