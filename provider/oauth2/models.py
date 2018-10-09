@@ -71,7 +71,7 @@ class Client(models.Model):
 
     @property
     def is_public(self):
-        return self.user == None
+        return self.user != None
 
     @classmethod
     def deserialize(cls, data):
