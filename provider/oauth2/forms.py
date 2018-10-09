@@ -164,7 +164,7 @@ class AuthorizationRequestForm(ScopeMixin, OAuthForm):
         redirect_uri = self.cleaned_data.get('redirect_uri')
 
         if redirect_uri:
-            if not redirect_uri == self.client.redirect_uri:
+            if not self.client.redirect_uri in redirect_uri[:len(self.client.redirect_uri)] and not self.client.sandbox_client:
                 raise OAuthValidationError({
                     'error': 'invalid_request',
                     'error_description': _("The requested redirect didn't "
