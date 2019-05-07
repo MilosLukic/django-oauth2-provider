@@ -144,7 +144,7 @@ class AccessToken(models.Model):
     * :meth:`get_expire_delta` - returns an integer representing seconds to
         expiry
     """
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, help_text='Add user to restrict client to public apis.')
     token = models.CharField(max_length=255, default=long_token, db_index=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     expires = models.DateTimeField()
